@@ -1,0 +1,60 @@
+import itertools
+# Step 1  #gaurav kumar pandey
+I_states = ["H", "L"]
+S_states = ["H", "L"]
+A_states = ["Good", "Poor"]
+Q_states = ["Good", "Avg", "Poor"]
+G_states = ["A", "B", "C"]
+# Step 2  #gaurav kumar pandey
+P_I = {"H": 0.30, "L": 0.70}
+P_S = {"H": 0.40, "L": 0.60}
+P_A = {"Good": 0.60, "Poor": 0.40}
+# Step 3  #gaurav kumar pandey
+P_Q = {
+    ("H", "H"): {"Good": 0.70, "Avg": 0.25, "Poor": 0.05},
+    ("H", "L"): {"Good": 0.50, "Avg": 0.35, "Poor": 0.15},
+    ("L", "H"): {"Good": 0.40, "Avg": 0.40, "Poor": 0.20},
+    ("L", "L"): {"Good": 0.20, "Avg": 0.45, "Poor": 0.35},
+}
+# Step 4  #gaurav kumar pandey
+P_G = {
+    ("Good", "Good"): {"A": 0.80, "B": 0.18, "C": 0.02},
+    ("Avg",  "Good"): {"A": 0.45, "B": 0.45, "C": 0.10},
+    ("Poor", "Good"): {"A": 0.15, "B": 0.50, "C": 0.35},
+    ("Good", "Poor"): {"A": 0.60, "B": 0.30, "C": 0.10},
+    ("Avg",  "Poor"): {"A": 0.25, "B": 0.45, "C": 0.30},
+    ("Poor", "Poor"): {"A": 0.05, "B": 0.35, "C": 0.60},
+}
+# Step 5  #gaurav kumar pandey
+def joint_prob(assignment: dict) -> float:
+    I = assignment["I"]
+    S = assignment["S"]
+    A = assignment["A"]
+    Q = assignment["Q"]
+    G = assignment["G"]
+    return (
+        P_I[I] *
+        P_S[S] *
+        P_A[A] *
+        P_Q[(I, S)][Q] *
+        P_G[(Q, A)][G]
+    )
+# Step 6  #gaurav kumar pandeydey
+all_assignments = []
+for I, S, A, Q, G in itertools.product(I_states, S_states, A_states, Q_states, G_states):
+    assignment = {"I": I, "S": S, "A": A, "Q": Q, "G": G}
+    all_assignments.append((assignment, joint_prob(assignment)))
+# Step 7  #gaurav kumar pandeyy
+def query_grade(evidence: dict) -> dict:
+    dist = {g: 0.0 for g in G_states}
+    for assignment, prob in all_assignments:
+        if all(assignment[k] == v for k, v in evidence.items()):
+            dist[assignment["G"]] += prob
+    total = sum(dist.values())
+    return {g: dist[g] / total for g in G_states}
+# Step 8  #gaurav kumar pandey
+print("P(G) =", query_grade({}))
+print("P(G | S=H, A=Good) =", query_grade({"S": "H", "A": "Good"}))
+print("P(G | S=L, A=Poor) =", query_grade({"S": "L", "A": "Poor"}))
+print("P(G | I=H, S=H, A=Good) =", query_grade({"I": "H", "S": "H", "A": "Good"}))
+print("P(G | Q=Poor, A=Good) =", query_grade({"Q": "Poor", "A": "Good"}))
